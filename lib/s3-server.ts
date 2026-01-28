@@ -1,46 +1,50 @@
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
-import { Readable } from "stream";
 import { logger } from "./logger";
 
-const s3Client = new S3Client({
-  region: process.env.NEXT_PUBLIC_S3_BUCKET_REGION!,
-  credentials: {
-    accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!,
-  },
-});
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  throw new Error(
+    "Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env.local"
+  );
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+const BUCKET_NAME = "pdfs";
 
 export async function downloadFromS3(fileKey: string) {
   try {
-    const params = {
-      Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,
-      Key: fileKey,
-    };
+    logger.debug("Downloading file from Supabase", fileKey);
+
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .download(fileKey);
+
+    if (error) {
+      logger.error("Supabase download error:", {
+        message: error.message,
+        fileKey,
+      });
+      throw new Error(`Download failed: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error("No data returned from download");
+    }
 
     const fileName = `/tmp/pdf-${Date.now()}.pdf`;
-    const command = new GetObjectCommand(params);
-    const data = await s3Client.send(command);
-    const stream = data.Body as Readable;
-
-    if (!stream) throw new Error("Cannot get file stream");
-
-    const buffer = await getStreamBuffer(stream);
+    const buffer = await data.arrayBuffer();
     fs.writeFileSync(fileName, new Uint8Array(buffer));
 
+    logger.debug("Successfully downloaded file from Supabase", fileKey);
     return fileName;
   } catch (err) {
-    logger.error("Error downloading from s3", {
-      error: err,
+    logger.error("Error downloading from Supabase", {
+      error: err instanceof Error ? err.message : String(err),
     });
     return null;
   }
 }
-
-const getStreamBuffer = (stream: Readable) =>
-  new Promise<Buffer>((resolve, reject) => {
-    const chunks: any[] = [];
-    stream.on("data", (chunk) => chunks.push(chunk));
-    stream.once("end", () => resolve(Buffer.concat(chunks)));
-    stream.once("error", reject);
-  });

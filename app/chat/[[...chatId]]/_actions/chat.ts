@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 
 export const getChats = async (): Promise<SafeChat[]> => {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return [];
     }
@@ -21,7 +21,7 @@ export const getChats = async (): Promise<SafeChat[]> => {
 
 export const getChat = async (chatId: string): Promise<SafeChat | null> => {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return null;
     }

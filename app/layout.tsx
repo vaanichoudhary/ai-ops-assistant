@@ -1,11 +1,12 @@
-import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
+
 import { Inter } from "next/font/google";
 import QueryProvider from "@providers/query-provider";
 import { Toaster } from "react-hot-toast";
 import { DbEventsProvider } from "@providers/db-events-provider";
 import { UserProvider } from "@providers/user-provider";
 import { ThemeProvider } from "next-themes";
+import { ClerkProvider } from "@clerk/nextjs";
+import type { Metadata } from "next";
 
 import "./globals.css";
 
@@ -27,7 +28,7 @@ export default function RootLayout({
         <DbEventsProvider>
           <UserProvider>
             <html lang="en" suppressHydrationWarning>
-              <body className={inter.className}>
+              <body className={inter.className} suppressHydrationWarning>
                 <ThemeProvider
                   attribute="class"
                   defaultTheme="system"
@@ -44,3 +45,4 @@ export default function RootLayout({
     </ClerkProvider>
   );
 }
+

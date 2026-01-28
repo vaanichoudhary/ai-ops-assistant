@@ -51,7 +51,7 @@ const PricingDialog: FunctionComponent<PricingDialogProps> = () => {
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full">
+      <DialogTrigger asChild>
         <Button className="w-full">
           <Crown
             size={20}

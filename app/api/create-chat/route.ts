@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
@@ -35,9 +35,9 @@ export async function POST(req: Request) {
       userId,
       error,
     });
-    return NextResponse.json({
-      error: "internal server error",
-      status: 500,
-    });
+    return NextResponse.json(
+      { error: "internal server error" },
+      { status: 500 }
+    );
   }
 }

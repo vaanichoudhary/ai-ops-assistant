@@ -134,8 +134,6 @@
 // };
 "use client";
 
-import { getAppSettings, getFeatureFlags, getUserMetadata } from "@lib/account";
-import { logger } from "@lib/logger";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 export type DbEventsData = Record<string, boolean | string> | null;
@@ -173,37 +171,14 @@ export const DbEventsProvider = ({
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DbEventsData | null>(null);
 
-  // ✅ Ensure hydration-safe mount
+  // ✅ Hydration-safe mount
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // ✅ Fetch initial data ONLY after mount
+  // ✅ SSE only (browser-safe)
   useEffect(() => {
     if (!mounted) return;
-
-    (async () => {
-      try {
-        const [flags, appSettings, userMetadata] = await Promise.all([
-          getFeatureFlags(),
-          getAppSettings(),
-          getUserMetadata(),
-        ]);
-
-        setData({
-          ...(flags || {}),
-          ...(appSettings || {}),
-          ...(userMetadata || {}),
-        });
-      } catch (err) {
-        setError("Failed to load initial settings");
-      }
-    })();
-  }, [mounted]);
-
-  // ✅ EventSource only after mount + browser
-  useEffect(() => {
-    if (!mounted || typeof window === "undefined") return;
 
     const eventSource = new EventSource("/api/db-events");
 
@@ -230,8 +205,8 @@ export const DbEventsProvider = ({
             : eventData;
         });
       } catch {
-        // ❌ Do NOT log during hydration
         setError("Invalid event data received");
+        onError?.("Invalid event data received");
       }
     };
 
@@ -246,12 +221,9 @@ export const DbEventsProvider = ({
       eventSource.close();
       setIsConnected(false);
     };
-  }, [mounted, onDataUpdate, onConnect, onDisconnect]);
+  }, [mounted, onDataUpdate, onConnect, onDisconnect, onError]);
 
-  // ✅ Prevent rendering before hydration stabilizes
-  if (!mounted) {
-    return <>{children}</>;
-  }
+  if (!mounted) return <>{children}</>;
 
   return (
     <Provider value={{ settings: data, isConnected, error }}>

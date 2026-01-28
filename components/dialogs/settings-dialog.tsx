@@ -71,7 +71,7 @@ export default function SettingsDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <TooltipIcon icon={SettingsIcon} tooltipText="Settings" />
       </DialogTrigger>
       <DialogContent className="max-w-md">
