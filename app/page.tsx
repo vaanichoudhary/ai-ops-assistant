@@ -76,29 +76,29 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center gap-2 px-10 w-full md:w-1/3">
               <h3 className="text-lg font-bold">Connect with me</h3>
 
-              <Link
+              {/* <Link
                 href="https://www.linkedin.com/in/vani-khaiwal-917aa1297"
                 target="_blank"
                 className="underline"
               >
                 LinkedIn
-              </Link>
+              </Link> */}
 
               <Link
-                href="https://github.com/vanikhaiwal"
+                href="https://github.com/vaanichoudhary"
                 target="_blank"
                 className="underline"
               >
                 GitHub
               </Link>
 
-              <Link
+              {/* <Link
                 href="https://leetcode.com/u/vani_khaiwal/"
                 target="_blank"
                 className="underline"
               >
                 LeetCode
-              </Link>
+              </Link> */}
             </div>
 
             <div className="flex items-center justify-center w-full md:w-2/3">
