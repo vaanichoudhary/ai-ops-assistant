@@ -2,38 +2,33 @@ import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 import { logger } from "./logger";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error(
-    "Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env.local"
-  );
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-
 const BUCKET_NAME = "pdfs";
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error(
+      "Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env.local"
+    );
+  }
+  return createClient(url, key);
+}
 
 export async function downloadFromS3(fileKey: string) {
   try {
     logger.debug("Downloading file from Supabase", fileKey);
 
-    const { data, error } = await supabase.storage
+    const { data, error } = await getSupabaseAdmin().storage
       .from(BUCKET_NAME)
       .download(fileKey);
 
     if (error) {
-      logger.error("Supabase download error:", {
-        message: error.message,
-        fileKey,
-      });
+      logger.error("Supabase download error:", { message: error.message, fileKey });
       throw new Error(`Download failed: ${error.message}`);
     }
 
-    if (!data) {
-      throw new Error("No data returned from download");
-    }
+    if (!data) throw new Error("No data returned from download");
 
     const fileName = `/tmp/pdf-${Date.now()}.pdf`;
     const buffer = await data.arrayBuffer();

@@ -1,43 +1,32 @@
 import { createClient } from "@supabase/supabase-js";
 import { logger } from "./logger";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local"
-  );
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 const BUCKET_NAME = "pdfs";
 
-export async function uploadToS3(file: File) {
-  const fileKey =
-    "uploads/" + Date.now().toString() + "-" + file.name.replace(/\s/g, "-");
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error(
+      "Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local"
+    );
+  }
+  return createClient(url, key);
+}
 
+export async function uploadToS3(file: File) {
+  const fileKey = "uploads/" + Date.now().toString() + "-" + file.name.replace(/\s/g, "-");
   try {
-    // Upload file to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { data, error } = await getSupabaseClient().storage
       .from(BUCKET_NAME)
-      .upload(fileKey, file, {
-        contentType: file.type,
-        upsert: false,
-      });
+      .upload(fileKey, file, { contentType: file.type, upsert: false });
 
     if (error) {
-      logger.error("Supabase upload error:", {
-        message: error.message,
-        fileKey,
-      });
+      logger.error("Supabase upload error:", { message: error.message, fileKey });
       throw new Error(`Upload failed: ${error.message}`);
     }
 
-    if (!data) {
-      throw new Error("No data returned from upload");
-    }
+    if (!data) throw new Error("No data returned from upload");
 
     logger.debug("Successfully uploaded file to Supabase", fileKey);
     return Promise.resolve({ file_key: fileKey, file_name: file.name });
@@ -52,13 +41,11 @@ export async function uploadToS3(file: File) {
 
 export async function removeFileFromS3(fileKey: string) {
   try {
-    const { error } = await supabase.storage
+    const { error } = await getSupabaseClient().storage
       .from(BUCKET_NAME)
       .remove([fileKey]);
 
-    if (error) {
-      throw new Error(`Remove failed: ${error.message}`);
-    }
+    if (error) throw new Error(`Remove failed: ${error.message}`);
 
     logger.debug("Successfully removed file from Supabase", fileKey);
   } catch (error) {
@@ -71,9 +58,7 @@ export async function removeFileFromS3(fileKey: string) {
 }
 
 export function getS3Url(file_key: string) {
-  if (!supabaseUrl) {
-    throw new Error("Supabase URL is not configured");
-  }
-  const url = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${file_key}`;
-  return url;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) throw new Error("Supabase URL is not configured");
+  return `${url}/storage/v1/object/public/${BUCKET_NAME}/${file_key}`;
 }
