@@ -14,7 +14,7 @@ export const GoToChatButton = () => {
 
   return (
     <Button
-      className="w-[130px] bg-black/90 text-neutral-100 hover:bg-black/80 mt-5"
+      className="w-[170px] bg-black/90 text-neutral-100 hover:bg-black/80 mt-5"
       disabled={isLoading}
       onClick={handleClick}
     >

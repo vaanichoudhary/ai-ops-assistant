@@ -499,12 +499,7 @@ export default function Home() {
           <div className="blob-sky"   style={{ top: "35%", left: "8%", zIndex: 0 }} />
           <div className="blob-peach" style={{ bottom: "20%", right: "10%", zIndex: 0 }} />
 
-          <div className="rise rise-1" style={{ position: "relative", zIndex: 2 }}>
-            <span className="hero-tag">
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5b9e6f", display: "inline-block" }} />
-              AI · PDF · RAG
-            </span>
-          </div>
+          
 
           <h1 className="dc-serif hero-headline rise rise-2">
             Talk to your<br />
@@ -517,16 +512,11 @@ export default function Home() {
             not guesswork.
           </p>
 
-          <div className="hero-cta rise rise-4">
+          <div className="hero-cta rise rise-4 p-5">
             <GoToChatButton />
           </div>
 
-          <div className="scroll-hint rise rise-5">
-            <span>scroll</span>
-            <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
-              <path d="M6 1v12M1 8l5 5 5-5" stroke="#bbb" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+         
         </section>
 
         {/* ── DEMO ── */}
