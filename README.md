@@ -17,7 +17,7 @@ Responses are generated strictly from the uploaded documents with source referen
 - LangChain, OpenAI, Vercel AI SDK
 - PostgreSQL (NeonDB) + Drizzle ORM
 - Pinecone Vector Database
-- AWS S3
+- Supabase
 - Clerk Authentication
 
 ## How It Works
